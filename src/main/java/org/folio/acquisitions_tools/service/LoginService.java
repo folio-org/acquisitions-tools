@@ -22,6 +22,9 @@ public class LoginService {
   @Value("${folio.api.url}")
   private String okapiUrl;
 
+  @Value("${folio.login.url}")
+  private String loginUrl;
+
   @Value("${folio.api.tenant}")
   private String tenant;
 
@@ -49,9 +52,7 @@ public class LoginService {
 
     HttpEntity<Map<String, String>> request = new HttpEntity<>(loginRequest, headers);
     ResponseEntity<JsonNode> response = restTemplate.postForEntity(
-      okapiUrl + "/authn/login",
-      request,
-      JsonNode.class
+        okapiUrl + "/authn/login", request, JsonNode.class
     );
 
     token = Objects.requireNonNull(response.getBody()).get("okapiToken").asText();

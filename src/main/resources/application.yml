@@ -11,6 +11,8 @@ server:
   port: 8080
 
 folio:
+  login:
+    url: ${KONG_URL}
   api:
     url: ${FOLIO_URL}
     tenant: consortium
