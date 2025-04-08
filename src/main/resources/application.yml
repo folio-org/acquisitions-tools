@@ -18,3 +18,5 @@ folio:
     password: ${FOLIO_PASSWORD}
     locations:
       endpoint: /search/consortium/locations
+    holdings:
+      endpoint: /search/consortium/holdings
