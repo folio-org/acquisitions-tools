@@ -21,8 +21,6 @@ The application requires the following environment variables to be set for datab
 - `FOLIO_USERNAME`: FOLIO API username
 - `FOLIO_PASSWORD`: FOLIO API password
 
-The application runs on port `8080` by default.
-
 ## Running the Application
 
 1. **Build the application:**
@@ -67,6 +65,8 @@ The application runs on port `8080` by default.
    ```
 
 ### Changing the Port
+
+The application runs on port `8080` by default.
 
 To run the application on a different port, set the `SERVER_PORT` environment variable _before_ running the `java -jar`
 command:
