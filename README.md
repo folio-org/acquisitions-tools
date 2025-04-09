@@ -27,7 +27,7 @@ The application requires the following environment variables to be set for datab
    Navigate to the project root directory and run the following Maven command to build the executable JAR:
 
    ```bash
-   mvn package
+    ./mvnw clean install
    ```
 
    This will create a JAR file in the `target` directory (e.g., `target/acquisitions-tools-0.0.1-SNAPSHOT.jar`).
