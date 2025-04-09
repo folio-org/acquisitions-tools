@@ -37,7 +37,7 @@ public class LocationService {
   private String tenant;
 
   public Map<String, String> getLocationIdsAndTenants() {
-    String endpoint = "/search/" + tenant + "/locations" + "?limit=1000";
+    String endpoint = "/search/consortium/locations" + "?limit=1000";
 
     HttpEntity<String> request = new HttpEntity<>(loginService.getHeaders());
     ResponseEntity<JsonNode> response = restTemplate.exchange(
@@ -54,7 +54,7 @@ public class LocationService {
   }
 
   public Map<String, String> getHoldingsAndTenants() {
-    String endpoint = "/search/" + tenant + "/holdings" + "?limit=1000";
+    String endpoint = "/search/consortium/holdings" + "?limit=1000";
 
     HttpEntity<String> request = new HttpEntity<>(loginService.getHeaders());
     ResponseEntity<JsonNode> response = restTemplate.exchange(
