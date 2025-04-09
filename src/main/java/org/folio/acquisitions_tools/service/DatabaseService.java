@@ -27,7 +27,7 @@ public class DatabaseService {
               (
                 SELECT jsonb_agg(
                   CASE
-                    WHEN location->>'locationId' = '%s' AND NOT (location ? 'tenantId') THEN\s
+                    WHEN location->>'locationId' = '%s' AND NOT (location ? 'tenantId') THEN
                       jsonb_set(location, '{tenantId}', '"%s"'::jsonb)
                     ELSE location
                   END
