@@ -98,6 +98,9 @@ The following endpoints are available under the `/api/locations` path:
 - **Success Response:** `200 OK` with body `"PO Line locations update completed successfully"`
 - **Error Response:** `500 Internal Server Error` with details
 
+**Note:** Holdings that exist in multiple tenants will be ignored from updating and require manual updates. These records will be logged for your review.
+- **Example:** Holding ID: UUID appears in tenants: tenantA, tenantB, tenantC
+
 ### Update Pieces
 
 - **Endpoint:** `/update-pieces`
@@ -109,3 +112,6 @@ The following endpoints are available under the `/api/locations` path:
   ```
 - **Success Response:** `200 OK` with body `"Pieces update completed successfully"`
 - **Error Response:** `500 Internal Server Error` with details
+
+**Note:** Holdings that exist in multiple tenants will be ignored from updating and require manual updates. These records will be logged for your review.
+- **Example:** Holding ID: UUID appears in tenants: tenantA, tenantB, tenantC
