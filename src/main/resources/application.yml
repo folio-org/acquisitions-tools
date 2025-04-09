@@ -16,7 +16,3 @@ folio:
     tenant: ${FOLIO_TENANT}
     username: ${FOLIO_USERNAME}
     password: ${FOLIO_PASSWORD}
-    locations:
-      endpoint: /search/consortium/locations
-    holdings:
-      endpoint: /search/consortium/holdings

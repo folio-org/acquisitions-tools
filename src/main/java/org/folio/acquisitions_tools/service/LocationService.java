@@ -21,7 +21,8 @@ import java.util.stream.StreamSupport;
 @Slf4j
 @Service
 public class LocationService {
-  private final RestTemplate restTemplate = new RestTemplate();
+  @Autowired
+  private RestTemplate restTemplate;
 
   @Autowired
   private LoginService loginService;
@@ -32,17 +33,11 @@ public class LocationService {
   @Value("${folio.api.url}")
   private String folioUrl;
 
-  @Value("${folio.api.locations.endpoint}")
-  private String locationsEndpoint;
-
-  @Value("${folio.api.holdings.endpoint}")
-  private String holdingsEndpoint;
-
   @Value("${folio.api.tenant}")
   private String tenant;
 
   public Map<String, String> getLocationIdsAndTenants() {
-    String endpoint = locationsEndpoint + "?limit=1000";
+    String endpoint = "/search/" + tenant + "/locations" + "?limit=1000";
 
     HttpEntity<String> request = new HttpEntity<>(loginService.getHeaders());
     ResponseEntity<JsonNode> response = restTemplate.exchange(
@@ -59,7 +54,7 @@ public class LocationService {
   }
 
   public Map<String, String> getHoldingsAndTenants() {
-    String endpoint = holdingsEndpoint + "?limit=1000";
+    String endpoint = "/search/" + tenant + "/holdings" + "?limit=1000";
 
     HttpEntity<String> request = new HttpEntity<>(loginService.getHeaders());
     ResponseEntity<JsonNode> response = restTemplate.exchange(

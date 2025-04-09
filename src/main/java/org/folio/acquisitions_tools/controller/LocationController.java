@@ -1,5 +1,6 @@
 package org.folio.acquisitions_tools.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.folio.acquisitions_tools.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,10 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/locations")
+@RequiredArgsConstructor
 public class LocationController {
 
-  @Autowired
-  private LocationService locationService;
+  private final LocationService locationService;
 
   @PostMapping("/update-polines")
   public ResponseEntity<String> updatePoLineLocations() {

@@ -97,10 +97,10 @@ public class DatabaseService {
                '{receivingTenantId}',
                '"%s"'::jsonb
            )
-           WHERE\s
+           WHERE
                jsonb->>'locationId' = '%s'
                AND NOT (jsonb ? 'receivingTenantId')
-          \s""";
+          """;
 
       int updatedRecords = jdbcTemplate.update(String.format(sql, tenant, locationTenantId, locationId));
       log.info("updatePiecesByLocation:: '{}' Updated Pieces for location: {} and locationTenant: {} in tenant: {}",
@@ -120,10 +120,10 @@ public class DatabaseService {
                '{receivingTenantId}',
                '"%s"'::jsonb
            )
-           WHERE\s
+           WHERE
                jsonb->>'holdingId' = '%s'
                AND NOT (jsonb ? 'receivingTenantId')
-          \s""";
+          """;
 
       int updatedRecords = jdbcTemplate.update(String.format(sql, tenant, holdingTenantId, holdingId));
       log.info("updatePiecesByHoldings:: '{}' Updated Pieces for holding: {} and holdingTenant: {} in tenant: {}",
