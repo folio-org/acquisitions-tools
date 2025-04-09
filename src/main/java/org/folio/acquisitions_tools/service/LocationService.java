@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Slf4j
@@ -36,64 +35,66 @@ public class LocationService {
   @Value("${folio.api.tenant}")
   private String tenant;
 
-  public Map<String, String> getLocationIdsAndTenants() {
-    String endpoint = "/search/consortium/locations" + "?limit=1000";
+  /**
+   * Generic method to fetch entities and their tenants from a search endpoint
+   *
+   * @param entityType The type of entity to fetch (e.g., "locations", "holdings")
+   * @param entityNodeName The name of the node in the response that contains the entities
+   * @return A map of entity IDs to tenant IDs with duplicates removed
+   */
+  private Map<String, String> getEntitiesAndTenants(String entityType, String entityNodeName) {
+    String endpoint = "/search/consortium/" + entityType + "?limit=1000";
 
     HttpEntity<String> request = new HttpEntity<>(loginService.getHeaders());
     ResponseEntity<JsonNode> response = restTemplate.exchange(
         folioUrl + endpoint, HttpMethod.GET, request, JsonNode.class
     );
 
-    JsonNode locations = Objects.requireNonNull(response.getBody()).get("locations");
+    JsonNode entities = Objects.requireNonNull(response.getBody()).get(entityNodeName);
 
-    return StreamSupport.stream(locations.spliterator(), false)
-        .collect(Collectors.toMap(
-            loc -> loc.get("id").asText(),
-            loc -> loc.get("tenantId").asText()
-        ));
-  }
+    Map<String, List<String>> duplicateEntities = new HashMap<>();
+    Map<String, String> allEntities = new HashMap<>();
 
-  public Map<String, String> getHoldingsAndTenants() {
-    String endpoint = "/search/consortium/holdings" + "?limit=1000";
-
-    HttpEntity<String> request = new HttpEntity<>(loginService.getHeaders());
-    ResponseEntity<JsonNode> response = restTemplate.exchange(
-        folioUrl + endpoint, HttpMethod.GET, request, JsonNode.class
-    );
-
-    JsonNode holdings = Objects.requireNonNull(response.getBody()).get("holdings");
-
-    Map<String, List<String>> duplicateHoldings = new HashMap<>();
-    Map<String, String> allHoldings = new HashMap<>();
-
-    StreamSupport.stream(holdings.spliterator(), false).forEach(holding -> {
-      String id = holding.get("id").asText();
-      String tenantId = holding.get("tenantId").asText();
-      if (allHoldings.containsKey(id)) {
-        if (!duplicateHoldings.containsKey(id)) {
-          duplicateHoldings.put(id, new ArrayList<>(List.of(allHoldings.get(id))));
+    StreamSupport.stream(entities.spliterator(), false).forEach(entity -> {
+      String id = entity.get("id").asText();
+      String tenantId = entity.get("tenantId").asText();
+      if (allEntities.containsKey(id)) {
+        if (!duplicateEntities.containsKey(id)) {
+          duplicateEntities.put(id, new ArrayList<>(List.of(allEntities.get(id))));
         }
-        duplicateHoldings.get(id).add(tenantId);
+        duplicateEntities.get(id).add(tenantId);
       } else {
-        allHoldings.put(id, tenantId);
+        allEntities.put(id, tenantId);
       }
     });
 
-    if (!duplicateHoldings.isEmpty()) {
-      log.warn("Found {} holdings with duplicate IDs:", duplicateHoldings.size());
-      duplicateHoldings.forEach((id, tenants) -> {
-        log.warn("Holding ID: {} appears in tenants: {}", id, String.join(", ", tenants));
+    if (!duplicateEntities.isEmpty()) {
+      log.warn("Found {} {} with duplicate IDs:", duplicateEntities.size(), entityType);
+      duplicateEntities.forEach((id, tenants) -> {
+        // Remove trailing 's' for singular form in log message
+        String entitySingular = entityType.endsWith("s") ?
+            entityType.substring(0, entityType.length() - 1) : entityType;
+        log.warn("{} ID: {} appears in tenants: {}", entitySingular,
+            id, String.join(", ", tenants));
       });
     }
 
-    // Create a new result map containing only non-duplicate holdings
-    Map<String, String> result = new HashMap<>(allHoldings);
-    duplicateHoldings.keySet().forEach(result::remove);
+    // Create a new result map containing only non-duplicate entities
+    Map<String, String> result = new HashMap<>(allEntities);
+    duplicateEntities.keySet().forEach(result::remove);
 
-    log.info("Removed {} duplicate holdings, returning {} unique holdings",
-        duplicateHoldings.size(), result.size());
+    log.info("Removed {} duplicate {}, returning {} unique {}",
+        duplicateEntities.size(), entityType, result.size(), entityType);
 
     return result;
+  }
+
+  public Map<String, String> getLocationIdsAndTenants() {
+    return getEntitiesAndTenants("locations", "locations");
+  }
+
+  public Map<String, String> getHoldingsAndTenants() {
+    return getEntitiesAndTenants("holdings", "holdings");
   }
 
   public void updatePoLineLocations() {
