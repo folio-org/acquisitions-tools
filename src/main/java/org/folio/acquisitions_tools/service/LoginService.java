@@ -17,13 +17,9 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class LoginService {
   private final RestTemplate restTemplate = new RestTemplate();
-  private String token;
 
   @Value("${folio.api.url}")
-  private String okapiUrl;
-
-  @Value("${folio.login.url}")
-  private String loginUrl;
+  private String folioUrl;
 
   @Value("${folio.api.tenant}")
   private String tenant;
@@ -34,14 +30,7 @@ public class LoginService {
   @Value("${folio.api.password}")
   private String password;
 
-  public String getToken() {
-    if (token == null) {
-      login();
-    }
-    return token;
-  }
-
-  private void login() {
+  private String getToken() {
     HttpHeaders headers = new HttpHeaders();
     headers.set("x-okapi-tenant", tenant);
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -52,10 +41,10 @@ public class LoginService {
 
     HttpEntity<Map<String, String>> request = new HttpEntity<>(loginRequest, headers);
     ResponseEntity<JsonNode> response = restTemplate.postForEntity(
-        okapiUrl + "/authn/login", request, JsonNode.class
+        folioUrl + "/authn/login", request, JsonNode.class
     );
 
-    token = Objects.requireNonNull(response.getBody()).get("okapiToken").asText();
+    return Objects.requireNonNull(response.getBody()).get("okapiToken").asText();
   }
 
   public HttpHeaders getHeaders() {

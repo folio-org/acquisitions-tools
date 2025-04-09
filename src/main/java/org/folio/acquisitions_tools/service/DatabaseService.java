@@ -1,11 +1,13 @@
 package org.folio.acquisitions_tools.service;
 
-import java.util.Map;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
+@Slf4j
 @Service
 public class DatabaseService {
 
@@ -18,29 +20,33 @@ public class DatabaseService {
       String locationTenantId = location.getValue();
 
       String sql = """
-         UPDATE %s_mod_orders_storage.po_line
-         SET jsonb = jsonb_set(
-           jsonb,
-           '{locations}',
-           (
-             SELECT jsonb_agg(
-               CASE
-                 WHEN location ? 'tenantId' THEN location
-                 ELSE jsonb_set(location, '{tenantId}', '"%s"'::jsonb)
-               END
-             )
-             FROM jsonb_array_elements(jsonb->'locations') AS location
-           )
-         )
-         WHERE\s
-             jsonb->'locations' @> '[{"locationId": "%s"}]'
-             AND NOT (
-                 SELECT bool_and(elem ? 'tenantId')
-                 FROM jsonb_array_elements(jsonb->'locations') AS elem
-             )
-        \s""";
+            UPDATE %s_mod_orders_storage.po_line
+            SET jsonb = jsonb_set(
+              jsonb,
+              '{locations}',
+              (
+                SELECT jsonb_agg(
+                  CASE
+                    WHEN location->>'locationId' = '%s' AND NOT (location ? 'tenantId') THEN\s
+                      jsonb_set(location, '{tenantId}', '"%s"'::jsonb)
+                    ELSE location
+                  END
+                )
+                FROM jsonb_array_elements(jsonb->'locations') AS location
+              )
+            )
+            WHERE
+                jsonb->'locations' @> '[{"locationId": "%s"}]'
+                AND NOT (
+                    SELECT bool_and(elem ? 'tenantId')
+                    FROM jsonb_array_elements(jsonb->'locations') AS elem
+                    WHERE elem->>'locationId' = '%s'
+                )
+          """;
 
-      jdbcTemplate.update(String.format(sql, tenant, locationTenantId, locationId));
+      int updatedRecords = jdbcTemplate.update(String.format(sql, tenant, locationId, locationTenantId, locationId, locationId));
+      log.info("updatePoLineLocationsByLocation:: '{}' Updated PoLines for location: {} and locationTenant: {} in tenant: {}",
+          updatedRecords, location, locationTenantId, tenant);
     }
   }
 
@@ -50,29 +56,32 @@ public class DatabaseService {
       String holdingTenantId = holding.getValue();
 
       String sql = """
-         UPDATE %s_mod_orders_storage.po_line
-         SET jsonb = jsonb_set(
+          UPDATE %s_mod_orders_storage.po_line
+          SET jsonb = jsonb_set(
            jsonb,
            '{locations}',
            (
              SELECT jsonb_agg(
                CASE
-                 WHEN location ? 'tenantId' THEN location
-                 ELSE jsonb_set(location, '{tenantId}', '"%s"'::jsonb)
+                 WHEN location->>'holdingId' = '%s' AND NOT (location ? 'tenantId') THEN
+                   jsonb_set(location, '{tenantId}', '"%s"'::jsonb)
+                 ELSE location
                END
              )
              FROM jsonb_array_elements(jsonb->'locations') AS location
            )
-         )
-         WHERE\s
+          )
+          WHERE
              jsonb->'locations' @> '[{"holdingId": "%s"}]'
              AND NOT (
                  SELECT bool_and(elem ? 'tenantId')
                  FROM jsonb_array_elements(jsonb->'locations') AS elem
+                 WHERE elem->>'holdingId' = '%s'
              )
-        \s""";
-
-      jdbcTemplate.update(String.format(sql, tenant, holdingTenantId, holdingId));
+          """;
+      int updatedRecords = jdbcTemplate.update(String.format(sql, tenant, holdingId, holdingTenantId, holdingId, holdingId));
+      log.info("updatePoLineLocationsByHolding:: '{}' Updated PoLines for holding: {} and holdingTenant: {} in tenant: {}",
+          updatedRecords, holding, holdingTenantId, tenant);
     }
   }
 
@@ -82,18 +91,20 @@ public class DatabaseService {
       String locationTenantId = location.getValue();
 
       String sql = """
-         UPDATE %s_mod_orders_storage.pieces
-         SET jsonb = jsonb_set(
-             jsonb,
-             '{receivingTenantId}',
-             '"%s"'::jsonb
-         )
-         WHERE\s
-             jsonb->>'locationId' = '%s'
-             AND NOT (jsonb ? 'receivingTenantId')
-        \s""";
+           UPDATE %s_mod_orders_storage.pieces
+           SET jsonb = jsonb_set(
+               jsonb,
+               '{receivingTenantId}',
+               '"%s"'::jsonb
+           )
+           WHERE\s
+               jsonb->>'locationId' = '%s'
+               AND NOT (jsonb ? 'receivingTenantId')
+          \s""";
 
-      jdbcTemplate.update(String.format(sql, tenant, locationTenantId, locationId));
+      int updatedRecords = jdbcTemplate.update(String.format(sql, tenant, locationTenantId, locationId));
+      log.info("updatePiecesByLocation:: '{}' Updated Pieces for location: {} and locationTenant: {} in tenant: {}",
+          updatedRecords, location, locationTenantId, tenant);
     }
   }
 
@@ -103,18 +114,20 @@ public class DatabaseService {
       String holdingTenantId = holding.getValue();
 
       String sql = """
-         UPDATE %s_mod_orders_storage.pieces
-         SET jsonb = jsonb_set(
-             jsonb,
-             '{receivingTenantId}',
-             '"%s"'::jsonb
-         )
-         WHERE\s
-             jsonb->>'holdingId' = '%s'
-             AND NOT (jsonb ? 'receivingTenantId')
-        \s""";
+           UPDATE %s_mod_orders_storage.pieces
+           SET jsonb = jsonb_set(
+               jsonb,
+               '{receivingTenantId}',
+               '"%s"'::jsonb
+           )
+           WHERE\s
+               jsonb->>'holdingId' = '%s'
+               AND NOT (jsonb ? 'receivingTenantId')
+          \s""";
 
-      jdbcTemplate.update(String.format(sql, tenant, holdingTenantId, holdingId));
+      int updatedRecords = jdbcTemplate.update(String.format(sql, tenant, holdingTenantId, holdingId));
+      log.info("updatePiecesByHoldings:: '{}' Updated Pieces for holding: {} and holdingTenant: {} in tenant: {}",
+          updatedRecords, holding, holdingTenantId, tenant);
     }
   }
 } 
