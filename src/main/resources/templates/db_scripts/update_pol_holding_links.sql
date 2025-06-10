@@ -1,5 +1,11 @@
 BEGIN;
 
+DO $$
+DECLARE
+    actually_updated_count integer;
+BEGIN
+RAISE NOTICE '[MIGRATION] Starting PO Line location update script';
+
 -- Select PO Lines that need potential updates
 WITH po_lines_to_process AS (
     SELECT
@@ -124,5 +130,9 @@ SET jsonb = jsonb_set(
             )
 FROM po_lines_for_update upd
 WHERE pol.id = upd.pol_id AND upd.current_locations_array != upd.new_locations_array_to_set;
+
+GET DIAGNOSTICS actually_updated_count = ROW_COUNT;
+RAISE NOTICE '[MIGRATION] PO Line location update script finished. Rows updated: %', actually_updated_count;
+END $$;
 
 COMMIT;
