@@ -1,9 +1,6 @@
 package org.folio.acquisitions_tools.service;
 
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
-
-import org.folio.acquisitions_tools.util.ScriptUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -13,8 +10,6 @@ import java.util.Map;
 @Slf4j
 @Service
 public class DatabaseService {
-
-  private static final String SYNC_POL_LOCATIONS_WITH_PIECES_SQL = "update_pol_holding_links.sql";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -135,12 +130,4 @@ public class DatabaseService {
           updatedRecords, holding, holdingTenantId, tenant);
     }
   }
-
-  public void syncPoLineLocationsWithPieces(String tenantId) {
-    log.info("syncPoLineLocationsWithPieces:: Executing SQL script: {} for tenant: {}", SYNC_POL_LOCATIONS_WITH_PIECES_SQL, tenantId);
-    val sqlScript = ScriptUtils.readScript(SYNC_POL_LOCATIONS_WITH_PIECES_SQL, tenantId);
-    val updatedRecords = jdbcTemplate.update(sqlScript);
-    log.info("syncPoLineLocationsWithPieces:: Completed execution of SQL script: {} for tenant: {}, updated: {}", SYNC_POL_LOCATIONS_WITH_PIECES_SQL, tenantId, updatedRecords);
-  }
-
 } 
