@@ -116,4 +116,10 @@ public class LocationService {
     log.info("updatePieces:: Updating pieces locations by holdingId");
     databaseService.updatePiecesByHolding(tenant, tenantsGroupedByHolding);
   }
+
+  public void syncPoLineLocations(String tenantId) {
+    log.info("syncPoLineLocations:: Synchronizing poLine locations with existing pieces for tenant: {}", tenantId);
+    databaseService.syncPoLineLocationsWithPieces(tenantId);
+  }
+
 } 
