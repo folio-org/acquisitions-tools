@@ -1,10 +1,12 @@
-BEGIN;
-
 DO $$
 DECLARE
-    actually_updated_count integer;
+    script_name text := 'update_pol_holding_links.sql';
+    updated_count integer := 0;
+    pol_record record;
 BEGIN
-RAISE NOTICE '[MIGRATION] Starting PO Line location update script';
+RAISE NOTICE E'[MIGRATION] Starting PO Line location update script: "%"\n', script_name;
+
+FOR pol_record IN
 
 -- Select PO Lines that need potential updates
 WITH po_lines_to_process AS (
@@ -123,11 +125,21 @@ FROM po_lines_for_update upd
 WHERE
     pol.id = upd.pol_id
     AND NOT (upd.current_locations_array @> upd.new_locations_array
-             AND upd.current_locations_array <@ upd.new_locations_array);
+             AND upd.current_locations_array <@ upd.new_locations_array)
+RETURNING pol.id AS updated_pol_id,
+          upd.current_locations_array AS old_locations,
+          upd.new_locations_array AS new_locations
 
+LOOP
+RAISE NOTICE E'[MIGRATION] Updated PO Line ID: %.\nOld Locations: %.\nNew Locations: %\n', pol_record.updated_pol_id, pol_record.old_locations, pol_record.new_locations;
+updated_count = updated_count + 1;
+END LOOP;
 
-GET DIAGNOSTICS actually_updated_count = ROW_COUNT;
-RAISE NOTICE '[MIGRATION] PO Line location update script finished. Rows updated: %', actually_updated_count;
-END $$;
+RAISE NOTICE E'[MIGRATION] PO Line location update script "%" finished. POL(s) updated: %\n', script_name, updated_count;
+
+EXCEPTION WHEN others THEN
+    RAISE EXCEPTION '[MIGRATION] Failed to execute script "%", error: %, SQLSTATE: %', script_name, SQLERRM, SQLSTATE;
 
 COMMIT;
+END; 
+$$;
