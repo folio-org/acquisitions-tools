@@ -2,7 +2,6 @@ package org.folio.acquisitions_tools.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.folio.acquisitions_tools.service.LocationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
