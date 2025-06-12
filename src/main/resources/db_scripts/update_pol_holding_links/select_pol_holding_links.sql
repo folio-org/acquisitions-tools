@@ -3,11 +3,11 @@ WITH po_lines_to_process AS (
     SELECT
         pol.id AS pol_id,
         COALESCE(pol.jsonb->'locations', '[]'::jsonb) AS current_locations_array -- For comparison
-    FROM consortium_mod_orders_storage.po_line pol
-    JOIN consortium_mod_orders_storage.purchase_order po ON pol.purchaseorderid = po.id
+    FROM ${tenant_id}_mod_orders_storage.po_line pol
+    JOIN ${tenant_id}_mod_orders_storage.purchase_order po ON pol.purchaseorderid = po.id
     WHERE
         (pol.jsonb->>'checkinItems')::boolean = false
-        AND left(lower(consortium_mod_orders_storage.f_unaccent(po.jsonb->>'workflowStatus'::text)), 600) = 'open'
+        AND left(lower(${tenant_id}_mod_orders_storage.f_unaccent(po.jsonb->>'workflowStatus'::text)), 600) = 'open'
 ),
 
 -- Select and determine the final grouping keys for pieces (final_location_id, final_holding_id) for each piece.
@@ -28,7 +28,7 @@ piece_final_keys AS (
             ELSE
                 NULL
         END AS final_holding_id
-    FROM consortium_mod_orders_storage.pieces p
+    FROM ${tenant_id}_mod_orders_storage.pieces p
     JOIN po_lines_to_process ptp ON p.polineid = ptp.pol_id
 ),
 
