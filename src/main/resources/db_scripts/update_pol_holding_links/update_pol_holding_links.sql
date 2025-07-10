@@ -137,8 +137,6 @@ END LOOP;
 
 RAISE NOTICE E'[MIGRATION] PO Line location update script "%" finished. POL(s) updated: %\n', script_name, updated_count;
 
-COMMIT;
-
 EXCEPTION WHEN others THEN
     RAISE EXCEPTION '[MIGRATION] Failed to execute script "%", error: %, SQLSTATE: %', script_name, SQLERRM, SQLSTATE;
 
