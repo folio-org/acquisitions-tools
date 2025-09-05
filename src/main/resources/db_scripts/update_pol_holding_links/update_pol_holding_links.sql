@@ -59,6 +59,7 @@ new_location_entries_calculated AS (
                          COALESCE(SUM(CASE WHEN UPPER(pfk.piece_format) = 'ELECTRONIC' THEN 1 ELSE 0 END), 0))
         ) AS new_location_details
     FROM piece_final_keys pfk
+    WHERE pfk.final_location_id IS NOT NULL OR pfk.final_holding_id IS NOT NULL
     GROUP BY
         pfk.pol_id,
         pfk.piece_receiving_tenant_id,
@@ -140,5 +141,5 @@ RAISE NOTICE E'[MIGRATION] PO Line location update script "%" finished. POL(s) u
 EXCEPTION WHEN others THEN
     RAISE EXCEPTION '[MIGRATION] Failed to execute script "%", error: %, SQLSTATE: %', script_name, SQLERRM, SQLSTATE;
 
-END; 
+END;
 $$;
